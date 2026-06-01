@@ -1,0 +1,5 @@
+/workspaces/Furnando-hair-assistant-/backend/src/main/java/com/haircut/controller/AnalyzeController.java
+/workspaces/Furnando-hair-assistant-/backend/src/main/java/com/haircut/CorsConfig.java
+/workspaces/Furnando-hair-assistant-/backend/src/main/java/com/haircut/model/AnalyzeRequest.java
+/workspaces/Furnando-hair-assistant-/backend/src/main/java/com/haircut/service/ClaudeService.java
+/workspaces/Furnando-hair-assistant-/backend/src/main/java/com/haircut/HaircutApplication.java

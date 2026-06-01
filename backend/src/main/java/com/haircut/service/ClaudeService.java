@@ -5,15 +5,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-// @Service diz ao Spring que esta classe faz "trabalho de negócio"
-// O Spring cria-a automaticamente e injeta-a onde for preciso
 @Service
 public class ClaudeService {
 
-    // Lê os valores do application.properties
     @Value("${anthropic.api.key}")
     private String apiKey;
 
@@ -23,7 +19,6 @@ public class ClaudeService {
     @Value("${anthropic.model}")
     private String model;
 
-    // WebClient é o "HTTP client" do Spring - faz pedidos a outras APIs
     private final WebClient webClient;
 
     public ClaudeService() {
@@ -31,7 +26,6 @@ public class ClaudeService {
     }
 
     public String analyzeHaircut(AnalyzeRequest request) {
-        // Constrói o texto das preferências para incluir no prompt
         String prefsText = request.getPreferences() == null ? "não especificadas"
             : request.getPreferences().entrySet().stream()
                 .map(e -> e.getKey() + ": " + e.getValue())
@@ -60,35 +54,32 @@ public class ClaudeService {
             Devolve exatamente 3 cortes, ordenados do mais ao menos recomendado.
             """.formatted(prefsText);
 
-        // Monta o corpo do pedido para a API da Anthropic
-        // O formato é: modelo, tokens máximos, e a mensagem com imagem + texto
-        Map<String, Object> requestBody = Map.of(
-            "model", model,
-            "max_tokens", 1000,
-            "messages", List.of(
-                Map.of(
-                    "role", "user",
-                    "content", List.of(
-                        // Bloco de imagem (base64)
-                        Map.of(
-                            "type", "image",
-                            "source", Map.of(
-                                "type", "base64",
-                                "media_type", "image/jpeg",
-                                "data", request.getImageBase64()
-                            )
-                        ),
-                        // Bloco de texto (o prompt)
-                        Map.of(
-                            "type", "text",
-                            "text", prompt
-                        )
-                    )
-                )
-            )
-        );
+        // Bloco de imagem
+        Map<String, Object> imageSource = new HashMap<>();
+        imageSource.put("type", "base64");
+        imageSource.put("media_type", "image/jpeg");
+        imageSource.put("data", request.getImageBase64());
 
-        // Faz o pedido POST à API e espera pela resposta
+        Map<String, Object> imageBlock = new HashMap<>();
+        imageBlock.put("type", "image");
+        imageBlock.put("source", imageSource);
+
+        // Bloco de texto
+        Map<String, Object> textBlock = new HashMap<>();
+        textBlock.put("type", "text");
+        textBlock.put("text", prompt);
+
+        // Mensagem
+        Map<String, Object> message = new HashMap<>();
+        message.put("role", "user");
+        message.put("content", Arrays.asList(imageBlock, textBlock));
+
+        // Body completo
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", model);
+        requestBody.put("max_tokens", 1000);
+        requestBody.put("messages", Collections.singletonList(message));
+
         Map response = webClient.post()
             .uri(apiUrl)
             .header("x-api-key", apiKey)
@@ -97,9 +88,8 @@ public class ClaudeService {
             .bodyValue(requestBody)
             .retrieve()
             .bodyToMono(Map.class)
-            .block(); // .block() espera pela resposta (pedido síncrono)
+            .block();
 
-        // Extrai o texto da resposta (estrutura: content[0].text)
         if (response != null && response.containsKey("content")) {
             List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
             if (!content.isEmpty()) {

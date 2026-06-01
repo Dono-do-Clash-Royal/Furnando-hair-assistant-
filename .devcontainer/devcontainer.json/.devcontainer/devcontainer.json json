@@ -1,0 +1,19 @@
+{
+  "name": "Haircut Advisor",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "forwardPorts": [8080, 5173],
+  "portsAttributes": {
+    "8080": { "label": "Spring Boot (backend)" },
+    "5173": { "label": "React (frontend)" }
+  },
+  "postCreateCommand": "cd frontend && npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-spring-boot",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
