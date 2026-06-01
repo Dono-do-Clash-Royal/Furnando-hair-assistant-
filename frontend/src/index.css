@@ -1,0 +1,119 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f8f7f4;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.4rem; }
+h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.3rem; }
+p  { font-size: 0.95rem; color: #555; line-height: 1.5; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Botões */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+}
+.btn:hover  { opacity: 0.85; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: #1a1a1a; color: #fff; }
+.btn-secondary { background: transparent; border-color: #ccc; color: #1a1a1a; }
+.btn-row { display: flex; gap: 10px; margin-top: 1.25rem; }
+.btn-row .btn-primary { flex: 1; }
+
+/* Upload */
+.upload-zone {
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s;
+}
+.upload-zone:hover { border-color: #888; }
+.upload-zone input {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-zone p { color: #888; margin-top: 0.5rem; font-size: 0.9rem; }
+.preview-img {
+  width: 100%; max-height: 200px;
+  object-fit: cover; border-radius: 8px;
+  margin-top: 1rem; display: none;
+}
+
+/* Chips do questionário */
+.q-block  { margin-bottom: 1.1rem; }
+.q-label  { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.15s;
+  background: transparent;
+}
+.chip:hover { border-color: #888; color: #1a1a1a; }
+.chip.sel   { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+/* Resultados */
+.face-badge {
+  display: inline-block;
+  background: #f0f0ee;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.haircut-card { border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 10px; }
+.haircut-card h3 { font-size: 1rem; margin-bottom: 4px; }
+.haircut-card .why { font-size: 0.88rem; color: #555; line-height: 1.5; }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.tag { font-size: 0.78rem; background: #f4f4f2; border-radius: 10px; padding: 3px 10px; color: #666; }
+.rank-best { border-left: 3px solid #f0a500; }
+.tip-box { background: #f8f7f4; border-radius: 8px; padding: 12px 14px; font-size: 0.88rem; color: #555; margin-top: 1rem; }
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 2px solid #e5e5e5;
+  border-top-color: #1a1a1a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Erro */
+.error { background: #fff0f0; border-radius: 8px; padding: 12px; color: #c00; font-size: 0.9rem; margin-top: 1rem; }
