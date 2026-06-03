@@ -4,8 +4,7 @@ function HaircutCard({ corte, rank, visible }) {
   const [images, setImages] = useState([])
 
   useEffect(() => {
-    // Duas queries diferentes para garantir 2 fotos variadas do mesmo corte
-    const base = corte.nome // ex: "Buzz Cut", "Crew Cut"
+    const base = corte.nome
     const q1 = encodeURIComponent(base + ' haircut')
     const q2 = encodeURIComponent(base + ' hairstyle men')
 
@@ -15,7 +14,7 @@ function HaircutCard({ corte, rank, visible }) {
         .then(data => {
           if (!data.results?.length) return null
           const shuffled = [...data.results].sort(() => Math.random() - 0.5)
-          return shuffled[0].urls.small
+          return shuffled[0].urls.regular
         })
         .catch(() => null)
 
@@ -62,10 +61,10 @@ function HaircutCard({ corte, rank, visible }) {
       {images.length > 0 && (
         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
           {images.map((url, i) => (
-            <div key={i} style={{ width: '48%', borderRadius: 10, overflow: 'hidden', height: 130, background: '#3d2e1a' }}>
+            <div key={i} style={{ width: '48%', borderRadius: 10, overflow: 'hidden', height: 220, background: '#1a1008' }}>
               <img src={url} alt={corte.nome}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s', cursor: 'pointer' }}
-                onMouseEnter={e => e.target.style.transform = 'scale(1.06)'}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', transition: 'transform 0.4s', cursor: 'pointer' }}
+                onMouseEnter={e => e.target.style.transform = 'scale(1.04)'}
                 onMouseLeave={e => e.target.style.transform = 'scale(1)'}
               />
             </div>
@@ -75,7 +74,7 @@ function HaircutCard({ corte, rank, visible }) {
       {images.length === 0 && (
         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
           {[0, 1].map(i => (
-            <div key={i} style={{ width: '48%', height: 130, borderRadius: 10, background: '#2a1e0e', animation: 'pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.3}s` }} />
+            <div key={i} style={{ width: '48%', height: 220, borderRadius: 10, background: '#2a1e0e', animation: 'pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.3}s` }} />
           ))}
         </div>
       )}
