@@ -2,14 +2,28 @@ import { useState, useEffect } from 'react'
 
 function HaircutCard({ corte, rank, visible }) {
   const [images, setImages] = useState([])
-  const [imgLoaded, setImgLoaded] = useState(false)
 
   useEffect(() => {
-    const query = encodeURIComponent(corte.nome + ' haircut men')
-    fetch(`https://api.unsplash.com/search/photos?query=${query}&per_page=2&client_id=rJlkAMV2LCJSog3gKUZyWYLBRo_6oEeASfm1KOvwbzc`)
-      .then(r => r.json())
-      .then(data => { if (data.results) setImages(data.results.map(img => img.urls.small)) })
-      .catch(() => {})
+    // Duas queries diferentes para garantir 2 fotos variadas do mesmo corte
+    const base = corte.nome // ex: "Buzz Cut", "Crew Cut"
+    const q1 = encodeURIComponent(base + ' haircut')
+    const q2 = encodeURIComponent(base + ' hairstyle men')
+
+    const fetchOne = (query, page) =>
+      fetch(`https://api.unsplash.com/search/photos?query=${query}&per_page=10&page=${page}&client_id=rJlkAMV2LCJSog3gKUZyWYLBRo_6oEeASfm1KOvwbzc`)
+        .then(r => r.json())
+        .then(data => {
+          if (!data.results?.length) return null
+          const shuffled = [...data.results].sort(() => Math.random() - 0.5)
+          return shuffled[0].urls.small
+        })
+        .catch(() => null)
+
+    Promise.all([fetchOne(q1, 1), fetchOne(q2, 2)])
+      .then(urls => {
+        const valid = urls.filter(Boolean)
+        if (valid.length) setImages(valid)
+      })
   }, [corte.nome])
 
   const ranks = ['🥇 Melhor escolha', '2.ª opção', '3.ª opção']
@@ -60,8 +74,8 @@ function HaircutCard({ corte, rank, visible }) {
       )}
       {images.length === 0 && (
         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-          {[0,1].map(i => (
-            <div key={i} style={{ width: '48%', height: 130, borderRadius: 10, background: '#2a1e0e', animation: 'pulse 1.5s ease-in-out infinite', animationDelay: `${i*0.3}s` }} />
+          {[0, 1].map(i => (
+            <div key={i} style={{ width: '48%', height: 130, borderRadius: 10, background: '#2a1e0e', animation: 'pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.3}s` }} />
           ))}
         </div>
       )}
@@ -96,7 +110,7 @@ export default function ResultsStep({ loading, results, onReset }) {
         <p>A analisar o teu rosto e a escolher os melhores cortes</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
           {['Formato do rosto...', 'Analisando...', 'Preparando cortes...'].map((txt, i) => (
-            <div key={i} style={{ fontSize: '0.75rem', color: '#7a6a52', padding: '4px 10px', border: '1px solid #3d2e1a', borderRadius: 20, animation: `pulse 1.5s ease-in-out infinite`, animationDelay: `${i*0.4}s` }}>{txt}</div>
+            <div key={i} style={{ fontSize: '0.75rem', color: '#7a6a52', padding: '4px 10px', border: '1px solid #3d2e1a', borderRadius: 20, animation: `pulse 1.5s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}>{txt}</div>
           ))}
         </div>
       </div>
