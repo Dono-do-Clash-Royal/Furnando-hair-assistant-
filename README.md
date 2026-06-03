@@ -2,6 +2,12 @@
 
 App que analisa o formato do rosto e sugere cortes de cabelo usando IA.
 
+cd frontend
+npm run dev
+
+cd backend
+mvn spring-boot:run
+
 ## Estrutura
 ```
 haircut-advisor/
