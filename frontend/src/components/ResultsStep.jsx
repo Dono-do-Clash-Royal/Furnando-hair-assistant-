@@ -6,15 +6,17 @@ function HaircutCard({ corte, rank, visible }) {
   useEffect(() => {
     const base = corte.nome
     const q1 = encodeURIComponent(base + ' haircut')
-    const q2 = encodeURIComponent(base + ' hairstyle men')
+    const q2 = encodeURIComponent(base + ' hairstyle')
 
     const fetchOne = (query, page) =>
-      fetch(`https://api.unsplash.com/search/photos?query=${query}&per_page=10&page=${page}&client_id=rJlkAMV2LCJSog3gKUZyWYLBRo_6oEeASfm1KOvwbzc`)
+      fetch(`https://api.pexels.com/v1/search?query=${query}&per_page=10&page=${page}`, {
+        headers: { Authorization: 'RGxTXmH6K6niGgcIMzDWjPplqei82jwMGACWXdOZRRhg8vwbt2IyTXvF' }
+      })
         .then(r => r.json())
         .then(data => {
-          if (!data.results?.length) return null
-          const shuffled = [...data.results].sort(() => Math.random() - 0.5)
-          return shuffled[0].urls.regular
+          if (!data.photos?.length) return null
+          const shuffled = [...data.photos].sort(() => Math.random() - 0.5)
+          return shuffled[0].src.large
         })
         .catch(() => null)
 
