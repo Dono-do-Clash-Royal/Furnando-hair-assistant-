@@ -4,20 +4,15 @@ import com.haircut.model.AnalyzeRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.*;
 
 @Service
 public class ClaudeService {
 
-    @Value("${anthropic.api.key}")
+    @Value("${openrouter.api.key}")
     private String apiKey;
-
-    @Value("${anthropic.api.url}")
-    private String apiUrl;
-
-    @Value("${anthropic.model}")
-    private String model;
 
     private final WebClient webClient;
 
@@ -32,71 +27,56 @@ public class ClaudeService {
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("não especificadas");
 
-        String prompt = """
-            Analisa esta foto do rosto de uma pessoa e recomenda cortes de cabelo.
-            
-            Preferências indicadas: %s
-            
-            Responde APENAS com JSON válido, sem texto extra, sem markdown. Estrutura:
-            {
-              "formato_rosto": "oval/redondo/quadrado/coração/losango/oblongo",
-              "descricao_formato": "1 frase descrevendo o formato detectado",
-              "cortes": [
-                {
-                  "nome": "nome do corte",
-                  "porque": "explicação em 2 frases do porquê funciona",
-                  "tags": ["tag1","tag2","tag3"],
-                  "dificuldade": "Fácil / Moderado / Exige cuidado"
-                }
-              ],
-              "dica_geral": "1 conselho personalizado"
-            }
-            Devolve exatamente 3 cortes, ordenados do mais ao menos recomendado.
-            """.formatted(prefsText);
+        String prompt = "Analisa esta foto do rosto de uma pessoa e recomenda cortes de cabelo. "
+            + "Preferências: " + prefsText + ". "
+            + "Responde APENAS com JSON válido sem markdown: "
+            + "{\"formato_rosto\":\"oval\",\"descricao_formato\":\"frase\","
+            + "\"cortes\":[{\"nome\":\"nome\",\"porque\":\"explicacao\",\"tags\":[\"t1\"],\"dificuldade\":\"Facil\"}],"
+            + "\"dica_geral\":\"conselho\"}. Devolve 3 cortes.";
 
-        // Bloco de imagem
-        Map<String, Object> imageSource = new HashMap<>();
-        imageSource.put("type", "base64");
-        imageSource.put("media_type", "image/jpeg");
-        imageSource.put("data", request.getImageBase64());
+        Map<String, Object> imageUrl = new HashMap<>();
+        imageUrl.put("url", "data:image/jpeg;base64," + request.getImageBase64());
 
-        Map<String, Object> imageBlock = new HashMap<>();
-        imageBlock.put("type", "image");
-        imageBlock.put("source", imageSource);
+        Map<String, Object> imagePart = new HashMap<>();
+        imagePart.put("type", "image_url");
+        imagePart.put("image_url", imageUrl);
 
-        // Bloco de texto
-        Map<String, Object> textBlock = new HashMap<>();
-        textBlock.put("type", "text");
-        textBlock.put("text", prompt);
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("type", "text");
+        textPart.put("text", prompt);
 
-        // Mensagem
         Map<String, Object> message = new HashMap<>();
         message.put("role", "user");
-        message.put("content", Arrays.asList(imageBlock, textBlock));
+        message.put("content", Arrays.asList(textPart, imagePart));
 
-        // Body completo
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", model);
-        requestBody.put("max_tokens", 1000);
+        requestBody.put("model", "google/gemma-3-27b-it");
         requestBody.put("messages", Collections.singletonList(message));
 
-        Map response = webClient.post()
-            .uri(apiUrl)
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", "2023-06-01")
-            .header("Content-Type", "application/json")
-            .bodyValue(requestBody)
-            .retrieve()
-            .bodyToMono(Map.class)
-            .block();
+        try {
+            Map response = webClient.post()
+                .uri("https://openrouter.ai/api/v1/chat/completions")
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .header("HTTP-Referer", "http://localhost:5173")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-        if (response != null && response.containsKey("content")) {
-            List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
-            if (!content.isEmpty()) {
-                return (String) content.get(0).get("text");
+            if (response != null) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                if (choices != null && !choices.isEmpty()) {
+                    Map<String, Object> msg = (Map<String, Object>) choices.get(0).get("message");
+                    return (String) msg.get("content");
+                }
             }
-        }
+            throw new RuntimeException("Resposta vazia do OpenRouter");
 
-        throw new RuntimeException("Resposta inesperada da API da Anthropic");
+        } catch (WebClientResponseException e) {
+            System.err.println("Erro HTTP: " + e.getStatusCode());
+            System.err.println("Resposta do servidor: " + e.getResponseBodyAsString());
+            throw new RuntimeException("Erro OpenRouter: " + e.getResponseBodyAsString());
+        }
     }
 }
